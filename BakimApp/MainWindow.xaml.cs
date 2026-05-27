@@ -53,6 +53,10 @@ public partial class MainWindow : Window
         {
             ContentArea.Content = new CleaningView { DataContext = _viewModel.CleaningViewModel };
         }
+        else if (_viewModel.CurrentViewModel is RegistryViewModel)
+        {
+            ContentArea.Content = new RegistryView { DataContext = _viewModel.RegistryViewModel };
+        }
     }
 
     private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
