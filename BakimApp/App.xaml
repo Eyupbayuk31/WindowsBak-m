@@ -11,6 +11,15 @@
                 <ResourceDictionary Source="Themes/Brushes.xaml"/>
                 <ResourceDictionary Source="Themes/Styles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Converters -->
+            <helpers:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+            <helpers:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <helpers:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+            <helpers:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+            <helpers:PercentageConverter x:Key="PercentageConverter"/>
+            <helpers:PercentageToWidthConverter x:Key="PercentageToWidthConverter"/>
+            <helpers:BytesToSizeConverter x:Key="BytesToSizeConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
