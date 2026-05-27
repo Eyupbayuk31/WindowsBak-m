@@ -2,7 +2,6 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows.Input;
-using System.Windows.Threading;
 using BakimApp.Models;
 using BakimApp.Services;
 
@@ -12,7 +11,7 @@ public class RegistryViewModel : BaseViewModel
 {
     private readonly RegistryService _registryService;
     private ObservableCollection<RegistryCategory> _categories = new();
-    private ObservableCollection<RegistryItem> _selectedItems = new();
+    private ObservableCollection<RegistryItem> _categoryItems = new();
     private RegistryCategory? _selectedCategory;
     private bool _isScanning;
     private bool _isCleaning;
@@ -27,12 +26,13 @@ public class RegistryViewModel : BaseViewModel
         _registryService = new RegistryService();
 
         ScanAllCommand = new RelayCommand(ScanAll, () => !IsScanning && !IsCleaning);
-        CleanSelectedCommand = new RelayCommand(CleanSelected, () => SelectedItems.Count > 0 && !IsCleaning);
+        CleanSelectedCommand = new RelayCommand(CleanSelected, () => CategoryItems.Any(i => i.IsSelected) && !IsCleaning);
         BackupCommand = new RelayCommand(CreateBackup, () => !IsBackingUp);
         RestoreCommand = new RelayCommand(RestoreBackup, () => SelectedBackup != null);
         SelectAllCommand = new RelayCommand(SelectAll);
         DeselectAllCommand = new RelayCommand(DeselectAll);
         CancelCommand = new RelayCommand(Cancel);
+        SelectCategoryCommand = new RelayCommand(SelectCategory);
 
         InitializeCategories();
         LoadBackups();
@@ -44,10 +44,10 @@ public class RegistryViewModel : BaseViewModel
         set => SetProperty(ref _categories, value);
     }
 
-    public ObservableCollection<RegistryItem> SelectedItems
+    public ObservableCollection<RegistryItem> CategoryItems
     {
-        get => _selectedItems;
-        set => SetProperty(ref _selectedItems, value);
+        get => _categoryItems;
+        set => SetProperty(ref _categoryItems, value);
     }
 
     public RegistryCategory? SelectedCategory
@@ -57,22 +57,14 @@ public class RegistryViewModel : BaseViewModel
         {
             if (SetProperty(ref _selectedCategory, value))
             {
-                OnPropertyChanged(nameof(CategoryItems));
+                UpdateCategoryItems();
                 OnPropertyChanged(nameof(CategoryItemCount));
+                OnPropertyChanged(nameof(HasSelectedCategory));
             }
         }
     }
 
-    public ObservableCollection<RegistryItem> CategoryItems
-    {
-        get
-        {
-            if (SelectedCategory == null)
-                return new ObservableCollection<RegistryItem>();
-
-            return new ObservableCollection<RegistryItem>(SelectedCategory.Items);
-        }
-    }
+    public bool HasSelectedCategory => SelectedCategory != null;
 
     public int CategoryItemCount => SelectedCategory?.ItemCount ?? 0;
 
@@ -125,6 +117,7 @@ public class RegistryViewModel : BaseViewModel
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
     public ICommand CancelCommand { get; }
+    public ICommand SelectCategoryCommand { get; }
 
     private void InitializeCategories()
     {
@@ -132,9 +125,10 @@ public class RegistryViewModel : BaseViewModel
         {
             category.PropertyChanged += (s, e) =>
             {
-                if (e.PropertyName == nameof(RegistryCategory.IsSelected))
+                if (e.PropertyName == nameof(RegistryCategory.ItemCount) ||
+                    e.PropertyName == nameof(RegistryCategory.Status) ||
+                    e.PropertyName == nameof(RegistryCategory.IsScanning))
                 {
-                    UpdateSelectedItems();
                     OnPropertyChanged(nameof(TotalSelectedCount));
                     OnPropertyChanged(nameof(TotalOrphanedCount));
                     OnPropertyChanged(nameof(TotalInvalidCount));
@@ -144,10 +138,24 @@ public class RegistryViewModel : BaseViewModel
         }
     }
 
-    private void UpdateSelectedItems()
+    private void UpdateCategoryItems()
     {
-        SelectedItems = new ObservableCollection<RegistryItem>(
-            Categories.Where(c => c.IsSelected).SelectMany(c => c.Items.Where(i => i.IsSelected)));
+        CategoryItems.Clear();
+        if (SelectedCategory != null)
+        {
+            foreach (var item in SelectedCategory.Items)
+            {
+                CategoryItems.Add(item);
+            }
+        }
+    }
+
+    private void SelectCategory(object? parameter)
+    {
+        if (parameter is RegistryCategory category)
+        {
+            SelectedCategory = category;
+        }
     }
 
     private void LoadBackups()
@@ -163,6 +171,7 @@ public class RegistryViewModel : BaseViewModel
         Progress = 0;
 
         var token = _cancellationTokenSource.Token;
+        var selectedCategorySnapshot = SelectedCategory;
 
         Task.Run(async () =>
         {
@@ -172,7 +181,10 @@ public class RegistryViewModel : BaseViewModel
                 if (token.IsCancellationRequested) break;
 
                 category.IsScanning = true;
-                var progress = new Progress<string>(msg => StatusMessage = msg);
+                var progress = new Progress<string>(msg =>
+                {
+                    category.Status = msg;
+                });
 
                 await Task.Run(() => _registryService.ScanCategory(category, progress), token);
 
@@ -182,38 +194,52 @@ public class RegistryViewModel : BaseViewModel
             }
 
             IsScanning = false;
-            StatusMessage = $"Tarama tamamlandi. {Categories.Sum(c => c.ItemCount)} oge bulundu.";
+            var totalItems = Categories.Sum(c => c.ItemCount);
+            StatusMessage = $"Tarama tamamlandi. {totalItems} oge bulundu.";
+
+            // Update UI - show selected category items
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                // If no category selected, select the first one with items
+                if (selectedCategorySnapshot == null || selectedCategorySnapshot.ItemCount == 0)
+                {
+                    selectedCategorySnapshot = Categories.FirstOrDefault(c => c.ItemCount > 0);
+                }
+
+                if (selectedCategorySnapshot != null)
+                {
+                    SelectedCategory = selectedCategorySnapshot;
+                }
+            });
         }, token);
     }
 
     private void CleanSelected()
     {
+        var selectedItems = CategoryItems.Where(i => i.IsSelected).ToList();
+        if (selectedItems.Count == 0)
+        {
+            StatusMessage = "Temizlenecek oge yok.";
+            return;
+        }
+
         IsCleaning = true;
         StatusMessage = "Temizleniyor...";
         _cancellationTokenSource = new CancellationTokenSource();
         Progress = 0;
 
-        var allItems = Categories.SelectMany(c => c.Items.Where(i => i.IsSelected)).ToList();
-        if (allItems.Count == 0)
-        {
-            IsCleaning = false;
-            StatusMessage = "Temizlenecek oge yok.";
-            return;
-        }
-
         var token = _cancellationTokenSource.Token;
 
         Task.Run(async () =>
         {
-            int count = 0;
             int deleted = 0;
             int failed = 0;
 
             // First create backup
             StatusMessage = "Yedek olusturuluyor...";
-            var backup = _registryService.CreateBackup("Otomatik yedek", allItems);
+            var backup = _registryService.CreateBackup("Otomatik yedek", selectedItems);
 
-            foreach (var item in allItems)
+            foreach (var item in selectedItems)
             {
                 if (token.IsCancellationRequested) break;
 
@@ -226,17 +252,19 @@ public class RegistryViewModel : BaseViewModel
                 else
                     failed++;
 
-                count++;
-                Progress = (double)count / allItems.Count * 100;
+                Progress = (double)(deleted + failed) / selectedItems.Count * 100;
             }
 
-            // Refresh the list
-            await Task.Run(() =>
+            // Refresh all categories
+            foreach (var category in Categories)
             {
-                foreach (var category in Categories)
-                {
-                    _registryService.ScanCategory(category, null);
-                }
+                _registryService.ScanCategory(category, null);
+            }
+
+            // Update UI
+            System.Windows.Application.Current.Dispatcher.Invoke(() =>
+            {
+                UpdateCategoryItems();
             });
 
             IsCleaning = false;
@@ -260,7 +288,7 @@ public class RegistryViewModel : BaseViewModel
         var backup = _registryService.CreateBackup("Manuel yedek", allItems);
 
         IsBackingUp = false;
-        StatusMessage = $"Yedek olusturuldu: {backup.FilePath}";
+        StatusMessage = $"Yedek olusturuldu!";
         LoadBackups();
     }
 
@@ -275,28 +303,22 @@ public class RegistryViewModel : BaseViewModel
 
     private void SelectAll()
     {
-        foreach (var category in Categories)
+        foreach (var item in CategoryItems)
         {
-            foreach (var item in category.Items)
-            {
-                item.IsSelected = true;
-            }
-            category.IsSelected = true;
+            item.IsSelected = true;
         }
-        UpdateSelectedItems();
+        OnPropertyChanged(nameof(TotalSelectedCount));
+        OnPropertyChanged(nameof(CategoryItemCount));
     }
 
     private void DeselectAll()
     {
-        foreach (var category in Categories)
+        foreach (var item in CategoryItems)
         {
-            foreach (var item in category.Items)
-            {
-                item.IsSelected = false;
-            }
-            category.IsSelected = false;
+            item.IsSelected = false;
         }
-        UpdateSelectedItems();
+        OnPropertyChanged(nameof(TotalSelectedCount));
+        OnPropertyChanged(nameof(CategoryItemCount));
     }
 
     private void Cancel()

@@ -71,18 +71,31 @@ public class RegistryCategory : INotifyPropertyChanged
     }
 }
 
-public class RegistryItem
+public class RegistryItem : INotifyPropertyChanged
 {
+    private bool _isSelected = true;
+
     public string KeyPath { get; set; } = string.Empty;
     public string ValueName { get; set; } = string.Empty;
     public string ValueData { get; set; } = string.Empty;
     public string Category { get; set; } = string.Empty;
     public RegistryRiskLevel RiskLevel { get; set; }
-    public bool IsSelected { get; set; } = true;
     public bool IsOrphaned { get; set; }
     public bool IsInvalid { get; set; }
 
+    public bool IsSelected
+    {
+        get => _isSelected;
+        set { _isSelected = value; OnPropertyChanged(); }
+    }
+
     public string DisplayPath => string.IsNullOrEmpty(ValueName) ? KeyPath : $"{KeyPath}\\{ValueName}";
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+    protected void OnPropertyChanged([CallerMemberName] string? name = null)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+    }
 }
 
 public class RegistryBackup

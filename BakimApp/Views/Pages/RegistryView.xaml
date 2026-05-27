@@ -193,8 +193,17 @@
             <Border Grid.Row="1" Background="#15FFFFFF" CornerRadius="8" BorderBrush="#30FFFFFF" BorderThickness="1" Margin="0,0,0,12">
                 <Grid>
                     <!-- Empty State -->
-                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                                Visibility="{Binding CategoryItems.Count, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Visible}">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasSelectedCategory}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
                         <Path Data="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"
                               Fill="#333333" Width="48" Height="48" Stretch="Uniform" Margin="0,0,0,16"/>
                         <TextBlock Text="Kategori secin veya tarayin" FontSize="14" Foreground="#666666" HorizontalAlignment="Center"/>
