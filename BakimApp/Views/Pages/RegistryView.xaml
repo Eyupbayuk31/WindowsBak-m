@@ -33,9 +33,19 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:RegistryCategory}">
-                        <Border Margin="0,0,12,12" Padding="16" CornerRadius="8"
-                                Background="#15FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1"
-                                Cursor="Hand" MouseLeftButtonUp="CategoryCard_Click">
+                        <Border x:Name="CardBorder" Margin="0,0,12,12" Padding="16" CornerRadius="8"
+                                BorderThickness="2" Cursor="Hand" MouseLeftButtonUp="CategoryCard_Click">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#15FFFFFF"/>
+                                    <Setter Property="BorderBrush" Value="#30FFFFFF"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsScanning}" Value="True">
+                                            <Setter Property="Background" Value="#20FFFFFF"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -43,15 +53,16 @@
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Top: Icon + Name -->
+                                <!-- Top: Icon + Selected Indicator -->
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto"/>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
 
                                     <!-- Icon with risk color -->
-                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8" Margin="0,0,0,0">
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Style.Triggers>
@@ -72,8 +83,15 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
 
+                                    <!-- Selected Checkmark -->
+                                    <Border x:Name="SelectedCheck" Grid.Column="2" Width="20" Height="20" CornerRadius="10"
+                                            Background="#60CDFF" Visibility="Collapsed">
+                                        <TextBlock Text="✓" FontSize="12" FontWeight="Bold"
+                                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
                                     <!-- Scanning indicator -->
-                                    <ProgressBar Grid.Column="0" Grid.ColumnSpan="2" Height="3" Margin="0,4,0,0" VerticalAlignment="Bottom"
+                                    <ProgressBar Grid.Column="0" Grid.ColumnSpan="3" Height="3" Margin="0,40,0,0" VerticalAlignment="Top"
                                                  IsIndeterminate="True"
                                                  Style="{StaticResource ModernProgress}"
                                                  Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
@@ -89,17 +107,18 @@
 
                                 <!-- Bottom: Count + Status -->
                                 <StackPanel Grid.Row="2" Margin="0,12,0,0">
-                                    <TextBlock FontSize="20" FontWeight="Bold" Foreground="#60CDFF">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0}">
-                                                <Binding Path="ItemCount"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
+                                    <TextBlock Text="{Binding ItemCount}" FontSize="20" FontWeight="Bold" Foreground="#60CDFF"/>
                                     <TextBlock Text="{Binding Status}" FontSize="11" Foreground="#666666" Margin="0,2,0,0"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="CardBorder" Property="BorderBrush" Value="#60CDFF"/>
+                                <Setter TargetName="CardBorder" Property="Background" Value="#2060CDFF"/>
+                                <Setter TargetName="SelectedCheck" Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

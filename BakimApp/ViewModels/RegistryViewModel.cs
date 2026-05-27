@@ -30,6 +30,7 @@ public class RegistryViewModel : BaseViewModel
         BackupCommand = new RelayCommand(CreateBackup, () => !IsBackingUp);
         RestoreCommand = new RelayCommand(RestoreBackup, () => SelectedBackup != null);
         CancelCommand = new RelayCommand(Cancel);
+        SelectCategoryCommand = new RelayCommand(OnSelectCategory);
 
         InitializeCategories();
         LoadBackups();
@@ -52,8 +53,18 @@ public class RegistryViewModel : BaseViewModel
         get => _selectedCategory;
         set
         {
+            // Clear previous selection visual
+            if (_selectedCategory != null)
+            {
+                _selectedCategory.IsSelected = false;
+            }
+
             if (SetProperty(ref _selectedCategory, value))
             {
+                if (value != null)
+                {
+                    value.IsSelected = true;
+                }
                 UpdateCategoryItems();
                 OnPropertyChanged(nameof(CategoryItemCount));
             }
@@ -109,9 +120,7 @@ public class RegistryViewModel : BaseViewModel
     public ICommand BackupCommand { get; }
     public ICommand RestoreCommand { get; }
     public ICommand CancelCommand { get; }
-
-    // SelectCategoryCommand - can accept a category or nothing (to select first)
-    public RelayCommand? SelectCategoryCommand { get; private set; }
+    public ICommand SelectCategoryCommand { get; }
 
     private void InitializeCategories()
     {
@@ -125,17 +134,20 @@ public class RegistryViewModel : BaseViewModel
             };
             Categories.Add(category);
         }
-
-        // Initialize SelectCategoryCommand
-        SelectCategoryCommand = new RelayCommand(SelectCategory);
     }
 
-    private void SelectCategory()
+    private void OnSelectCategory(object? parameter)
     {
-        // Select first non-empty category
-        var firstNonEmpty = Categories.FirstOrDefault(c => c.ItemCount > 0);
-        if (firstNonEmpty != null)
-            SelectedCategory = firstNonEmpty;
+        if (parameter is RegistryCategory category)
+        {
+            SelectedCategory = category;
+        }
+        else if (parameter == null)
+        {
+            var firstNonEmpty = Categories.FirstOrDefault(c => c.ItemCount > 0);
+            if (firstNonEmpty != null)
+                SelectedCategory = firstNonEmpty;
+        }
     }
 
     private void UpdateCategoryItems()
@@ -182,7 +194,6 @@ public class RegistryViewModel : BaseViewModel
                 totalItems += category.ItemCount;
                 Progress = (double)count / Categories.Count * 100;
 
-                // Update status on UI thread
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     StatusMessage = $"Tarandi: {category.Name} ({category.ItemCount} oge)";
@@ -192,18 +203,12 @@ public class RegistryViewModel : BaseViewModel
             IsScanning = false;
             StatusMessage = $"Tarama tamamlandi. {totalItems} toplam oge bulundu.";
 
-            // Select first non-empty category
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 var firstNonEmpty = Categories.FirstOrDefault(c => c.ItemCount > 0);
-                if (firstNonEmpty != null && SelectedCategory == null)
+                if (firstNonEmpty != null)
                 {
                     SelectedCategory = firstNonEmpty;
-                }
-                else if (SelectedCategory != null)
-                {
-                    // Refresh selected category items
-                    UpdateCategoryItems();
                 }
             });
         }, token);
@@ -230,14 +235,12 @@ public class RegistryViewModel : BaseViewModel
             int deleted = 0;
             int failed = 0;
 
-            // Create backup first
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 StatusMessage = "Yedek olusturuluyor...";
             });
             var backup = _registryService.CreateBackup("Otomatik Yedek", selectedItems);
 
-            // Delete items
             foreach (var item in selectedItems)
             {
                 if (token.IsCancellationRequested) break;
@@ -250,7 +253,6 @@ public class RegistryViewModel : BaseViewModel
                 Progress = (double)(deleted + failed) / selectedItems.Count * 100;
             }
 
-            // Refresh all categories
             foreach (var category in Categories)
             {
                 _registryService.ScanCategory(category, null);
@@ -259,7 +261,6 @@ public class RegistryViewModel : BaseViewModel
             IsCleaning = false;
             StatusMessage = $"Tamamlandi. {deleted} silindi, {failed} basarisiz.";
 
-            // Refresh selected category
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 UpdateCategoryItems();
@@ -287,7 +288,7 @@ public class RegistryViewModel : BaseViewModel
         var backup = _registryService.CreateBackup("Manuel Yedek", allItems);
 
         IsBackingUp = false;
-        StatusMessage = $"Yedek olusturuldu!";
+        StatusMessage = "Yedek olusturuldu!";
         LoadBackups();
     }
 
