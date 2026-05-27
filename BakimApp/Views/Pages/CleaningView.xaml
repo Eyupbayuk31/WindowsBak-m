@@ -1,0 +1,152 @@
+<UserControl x:Class="BakimApp.Views.Pages.CleaningView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="clr-namespace:BakimApp.ViewModels"
+             xmlns:models="clr-namespace:BakimApp.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="800"
+             d:DataContext="{d:DesignInstance vm:CleaningViewModel}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <StackPanel Grid.Row="0" Margin="0,0,32,24">
+            <TextBlock Text="Temizlik" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="Sisteminizi temizleyerek performansı artırın"
+                       Style="{StaticResource PageSubtitle}"/>
+        </StackPanel>
+
+        <!-- Categories Grid -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Categories}" Margin="0,0,32,0">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <UniformGrid Columns="4"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:CleaningCategory}">
+                        <Border Margin="0,0,12,12" Padding="16" CornerRadius="8"
+                                Background="#15FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Top: Icon + Checkbox -->
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <!-- Icon -->
+                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
+                                                        <Setter Property="Background" Value="#206CCB5F"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Caution">
+                                                        <Setter Property="Background" Value="#20FCE100"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Critical">
+                                                        <Setter Property="Background" Value="#20F85149"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <TextBlock Text="{Binding Icon}" FontFamily="Segoe Fluent Icons"
+                                                   FontSize="16" Foreground="White"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+
+                                    <!-- Checkbox -->
+                                    <CheckBox Grid.Column="2" IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              Style="{StaticResource ModernCheckBox}"/>
+                                </Grid>
+
+                                <!-- Middle: Name + Description -->
+                                <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
+                                               Foreground="White" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="11"
+                                               Foreground="#999999" Margin="0,2,0,0"
+                                               TextWrapping="Wrap"/>
+                                </StackPanel>
+
+                                <!-- Bottom: Size -->
+                                <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                                    <TextBlock Text="{Binding FormattedSize}" FontSize="20" FontWeight="Bold"
+                                               Foreground="#60CDFF"/>
+                                    <TextBlock FontSize="11" Foreground="#666666" Margin="0,2,0,0">
+                                        <Run Text="{Binding FileCount, Mode=OneWay}"/>
+                                        <Run Text=" dosya"/>
+                                    </TextBlock>
+
+                                    <!-- Scanning indicator -->
+                                    <ProgressBar Height="3" Margin="0,8,0,0"
+                                                IsIndeterminate="True"
+                                                Style="{StaticResource ModernProgress}"
+                                                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <!-- Bottom Action Bar -->
+        <Border Grid.Row="2" Background="#15FFFFFF" CornerRadius="8" Padding="24,16" Margin="0,16,32,0"
+                BorderBrush="#30FFFFFF" BorderThickness="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Left: Summary -->
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock FontSize="12" Foreground="#999999">
+                        <Run Text="Seçili: "/>
+                        <Run Text="{Binding SelectedCategoriesCount, Mode=OneWay}" FontWeight="Bold" Foreground="White"/>
+                        <Run Text=" kategori"/>
+                    </TextBlock>
+                    <TextBlock Text="{Binding FormattedTotalSelectedSize, Mode=OneWay}"
+                               FontSize="20" FontWeight="Bold" Foreground="#60CDFF" Margin="0,4,0,0"/>
+                </StackPanel>
+
+                <!-- Right: Buttons -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button Content="Tümünü Seç" Style="{StaticResource GhostButton}"
+                            Command="{Binding SelectAllCommand}" Margin="0,0,8,0"/>
+
+                    <Button Content="Tara" Style="{StaticResource GhostButton}"
+                            Command="{Binding ScanAllCommand}" Margin="0,0,8,0"
+                            IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}"/>
+
+                    <Button Content="Temizle" Style="{StaticResource AccentButton}"
+                            Command="{Binding CleanSelectedCommand}" Margin="0,0,8,0"
+                            IsEnabled="{Binding IsCleaning, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}"/>
+
+                    <Button Content="İptal" Style="{StaticResource GhostButton}"
+                            Command="{Binding CancelCommand}"
+                            Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>
