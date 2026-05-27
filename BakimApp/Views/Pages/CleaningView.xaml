@@ -6,7 +6,7 @@
              xmlns:vm="clr-namespace:BakimApp.ViewModels"
              xmlns:models="clr-namespace:BakimApp.Models"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800"
+             d:DesignHeight="700" d:DesignWidth="900"
              d:DataContext="{d:DesignInstance vm:CleaningViewModel}">
 
     <Grid>
@@ -18,8 +18,8 @@
 
         <!-- Header -->
         <StackPanel Grid.Row="0" Margin="0,0,32,24">
-            <TextBlock Text="Temizlik" Style="{StaticResource PageTitle}"/>
-            <TextBlock Text="Sisteminizi temizleyerek performansı artırın"
+            <TextBlock Text="Sistem Temizligi" Style="{StaticResource PageTitle}"/>
+            <TextBlock Text="Gereksiz dosyalari temizleyerek sisteminizi hizlandirin"
                        Style="{StaticResource PageSubtitle}"/>
         </StackPanel>
 
@@ -33,75 +33,114 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type models:CleaningCategory}">
-                        <Border Margin="0,0,12,12" Padding="16" CornerRadius="8"
-                                Background="#15FFFFFF" BorderBrush="#30FFFFFF" BorderThickness="1">
+                        <Border Margin="0,0,12,12" Padding="20" CornerRadius="12" Cursor="Hand"
+                                BorderThickness="2" MouseLeftButtonUp="Category_Click">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#18182280"/>
+                                    <Setter Property="BorderBrush" Value="#27272A"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="BorderBrush" Value="#6366F1"/>
+                                            <Setter Property="Background" Value="#1A1A2440"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="20" ShadowDepth="2" Direction="270" Color="#000000" Opacity="0.2"/>
+                            </Border.Effect>
+
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
 
-                                <!-- Top: Icon + Checkbox -->
-                                <Grid Grid.Row="0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
+                                <!-- Icon with risk color -->
+                                <Border Grid.Row="0" Width="40" Height="40" CornerRadius="10">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background">
+                                                <Setter.Value>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                        <GradientStop Color="#6366F1" Offset="0"/>
+                                                        <GradientStop Color="#8B5CF6" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding Icon}" FontFamily="Segoe Fluent Icons"
+                                               FontSize="18" Foreground="White"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
 
-                                    <!-- Icon -->
-                                    <Border Grid.Column="0" Width="36" Height="36" CornerRadius="8">
-                                        <Border.Style>
-                                            <Style TargetType="Border">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
-                                                        <Setter Property="Background" Value="#206CCB5F"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Caution">
-                                                        <Setter Property="Background" Value="#20FCE100"/>
-                                                    </DataTrigger>
-                                                    <DataTrigger Binding="{Binding RiskLevel}" Value="Critical">
-                                                        <Setter Property="Background" Value="#20F85149"/>
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding Icon}" FontFamily="Segoe Fluent Icons"
-                                                   FontSize="16" Foreground="White"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
+                                <!-- Scanning Progress -->
+                                <ProgressBar Grid.Row="0" Height="3" VerticalAlignment="Bottom" Margin="0,4,0,0"
+                                             IsIndeterminate="True" Style="{StaticResource ModernProgress}"
+                                             Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
 
-                                    <!-- Checkbox -->
-                                    <CheckBox Grid.Column="2" IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                                              VerticalAlignment="Center"
-                                              Style="{StaticResource ModernCheckBox}"/>
-                                </Grid>
-
-                                <!-- Middle: Name + Description -->
-                                <StackPanel Grid.Row="1" Margin="0,12,0,0">
-                                    <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold"
-                                               Foreground="White" TextWrapping="Wrap"/>
+                                <!-- Name & Description -->
+                                <StackPanel Grid.Row="1" Margin="0,16,0,0">
+                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold"
+                                               Foreground="#FFFFFF" TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding Description}" FontSize="11"
-                                               Foreground="#999999" Margin="0,2,0,0"
-                                               TextWrapping="Wrap"/>
+                                               Foreground="#71717A" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                 </StackPanel>
 
-                                <!-- Bottom: Size -->
-                                <StackPanel Grid.Row="2" Margin="0,12,0,0">
-                                    <TextBlock Text="{Binding FormattedSize}" FontSize="20" FontWeight="Bold"
-                                               Foreground="#60CDFF"/>
-                                    <TextBlock FontSize="11" Foreground="#666666" Margin="0,2,0,0">
-                                        <Run Text="{Binding FileCount, Mode=OneWay}"/>
-                                        <Run Text=" dosya"/>
-                                    </TextBlock>
-
-                                    <!-- Scanning indicator -->
-                                    <ProgressBar Height="3" Margin="0,8,0,0"
-                                                IsIndeterminate="True"
-                                                Style="{StaticResource ModernProgress}"
-                                                Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
+                                <!-- Size Info -->
+                                <StackPanel Grid.Row="2" Margin="0,12,0,0" Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Size, Converter={StaticResource BytesToSizeConverter}, FallbackValue=0 MB}"
+                                               FontSize="18" FontWeight="Bold" Foreground="#6366F1"/>
                                 </StackPanel>
+
+                                <!-- Footer: File Count + Risk -->
+                                <Grid Grid.Row="3" Margin="0,8,0,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border CornerRadius="4" Padding="6,2">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#10FFFFFF"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
+                                                            <Setter Property="Background" Value="#1010B981"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Caution">
+                                                            <Setter Property="Background" Value="#10F59E0B"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding RiskLevel}" Value="Dangerous">
+                                                            <Setter Property="Background" Value="#10EF4444"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock FontSize="10" FontWeight="SemiBold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Foreground" Value="#71717A"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="Safe">
+                                                                <Setter Property="Foreground" Value="#10B981"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="Caution">
+                                                                <Setter Property="Foreground" Value="#F59E0B"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding RiskLevel}" Value="Dangerous">
+                                                                <Setter Property="Foreground" Value="#EF4444"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding FileCount, StringFormat={}{0} dosya}" 
+                                               FontSize="11" Foreground="#71717A" 
+                                               HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                </Grid>
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -110,41 +149,46 @@
         </ScrollViewer>
 
         <!-- Bottom Action Bar -->
-        <Border Grid.Row="2" Background="#15FFFFFF" CornerRadius="8" Padding="24,16" Margin="0,16,32,0"
-                BorderBrush="#30FFFFFF" BorderThickness="1">
+        <Border Grid.Row="2" Margin="0,16,32,0" CornerRadius="12" Padding="24,20"
+                Background="#18182280" BorderBrush="#27272A" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Left: Summary -->
+                <!-- Left: Stats -->
                 <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock FontSize="12" Foreground="#999999">
-                        <Run Text="Seçili: "/>
-                        <Run Text="{Binding SelectedCategoriesCount, Mode=OneWay}" FontWeight="Bold" Foreground="White"/>
-                        <Run Text=" kategori"/>
-                    </TextBlock>
-                    <TextBlock Text="{Binding FormattedTotalSelectedSize, Mode=OneWay}"
-                               FontSize="20" FontWeight="Bold" Foreground="#60CDFF" Margin="0,4,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <Border CornerRadius="6" Padding="10,4" Margin="0,0,10,0" Background="#10FFFFFF">
+                            <TextBlock FontSize="12" Foreground="#FFFFFF" FontWeight="SemiBold">
+                                <Run Text="{Binding SelectedSize, Converter={StaticResource BytesToSizeConverter}, FallbackValue=0}"/>
+                                <Run Text=" secili"/>
+                            </TextBlock>
+                        </Border>
+                        <Border CornerRadius="6" Padding="10,4" Background="#106366F1">
+                            <TextBlock FontSize="12" Foreground="#6366F1" FontWeight="SemiBold">
+                                <Run Text="{Binding SelectedCount}"/>
+                                <Run Text=" kategori"/>
+                            </TextBlock>
+                        </Border>
+                    </StackPanel>
+                    <TextBlock Text="{Binding StatusMessage}" FontSize="12" Foreground="#71717A"/>
+                    <ProgressBar Height="4" Margin="0,8,0,0" Value="{Binding Progress, Mode=OneWay}" Maximum="100"
+                                 Style="{StaticResource ModernProgress}"
+                                 Visibility="{Binding IsScanning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
                 </StackPanel>
 
                 <!-- Right: Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="Tümünü Seç" Style="{StaticResource GhostButton}"
-                            Command="{Binding SelectAllCommand}" Margin="0,0,8,0"/>
-
                     <Button Content="Tara" Style="{StaticResource GhostButton}"
-                            Command="{Binding ScanAllCommand}" Margin="0,0,8,0"
-                            IsEnabled="{Binding IsScanning, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}"/>
-
+                            Command="{Binding ScanCommand}" Margin="0,0,10,0"/>
                     <Button Content="Temizle" Style="{StaticResource AccentButton}"
-                            Command="{Binding CleanSelectedCommand}" Margin="0,0,8,0"
-                            IsEnabled="{Binding IsCleaning, Converter={StaticResource InverseBoolConverter}, FallbackValue=True}"/>
-
-                    <Button Content="İptal" Style="{StaticResource GhostButton}"
-                            Command="{Binding CancelCommand}"
-                            Visibility="{Binding IsCleaning, Converter={StaticResource BoolToVisibilityConverter}, FallbackValue=Collapsed}"/>
+                            Command="{Binding CleanCommand}" Margin="0,0,10,0"/>
+                    <Button Content="Hepsi" Style="{StaticResource GhostButton}"
+                            Command="{Binding SelectAllCommand}" Margin="0,0,10,0"/>
+                    <Button Content="Iptal" Style="{StaticResource GhostButton}"
+                            Command="{Binding CancelCommand}"/>
                 </StackPanel>
             </Grid>
         </Border>

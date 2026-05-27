@@ -5,148 +5,222 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:vm="clr-namespace:BakimApp.ViewModels"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="800"
+             d:DesignHeight="700" d:DesignWidth="900"
              d:DataContext="{d:DesignInstance vm:DashboardViewModel}">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="0,0,32,0">
+        <StackPanel>
             <!-- Header -->
             <TextBlock Text="Dashboard" Style="{StaticResource PageTitle}"/>
-            <TextBlock Text="Sisteminizin sağlık durumunu görüntüleyin"
+            <TextBlock Text="Sistem durumunu ve performansi goruntuleyin"
                        Style="{StaticResource PageSubtitle}"/>
 
-            <!-- System Stats Cards -->
-            <TextBlock Text="SİSTEM DURUMU" Style="{StaticResource SectionTitle}"/>
-
-            <Grid Margin="0,0,0,32">
+            <!-- System Stats Row -->
+            <Grid Margin="0,0,0,24">
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- CPU Card -->
-                <Border Grid.Column="0" Style="{StaticResource GlassCard}">
-                    <StackPanel>
-                        <!-- Icon -->
-                        <Border Width="40" Height="40" CornerRadius="8" Background="#20007BEF" Margin="0,0,0,16">
-                            <Path Data="M3,13h8V3H3V13z M3,21h8v-6H3V21z M13,21h8V11h-8V21z M13,3v6h8V3H13z"
-                                  Fill="#60CDFF" Width="20" Height="20" Stretch="Uniform"/>
+                <Border Grid.Column="0" Style="{StaticResource GlassCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="8" Background="#3B82F6" Margin="0,0,12,0">
+                                <Path Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M12,6.5A5.5,5.5 0 0,1 17.5,12A5.5,5.5 0 0,1 12,17.5A5.5,5.5 0 0,1 6.5,12A5.5,5.5 0 0,1 12,6.5M12,8A4,4 0 0,0 8,12A4,4 0 0,0 12,16A4,4 0 0,0 16,12A4,4 0 0,0 12,8M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10Z"
+                                      Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="CPU" FontSize="13" FontWeight="SemiBold" Foreground="#A1A1AA" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="{Binding CpuUsage, StringFormat={}{0:F0}%}"
+                                   FontSize="36" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,16,0,8"/>
+
+                        <Border Grid.Row="2" Height="4" CornerRadius="2" Background="#27272A">
+                            <Border CornerRadius="2" Background="#3B82F6" HorizontalAlignment="Left"
+                                    Width="{Binding CpuUsage, Converter={StaticResource PercentageToWidthConverter}, FallbackValue=50%}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#3B82F6" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
                         </Border>
-
-                        <TextBlock Text="{Binding FormattedCpuUsage}" Style="{StaticResource StatValue}"/>
-                        <TextBlock Text="CPU Kullanımı" Style="{StaticResource StatLabel}"/>
-
-                        <!-- Progress -->
-                        <ProgressBar Height="4" Margin="0,16,0,0"
-                                     Value="{Binding CpuUsage, Mode=OneWay}" Maximum="100"
-                                     Style="{StaticResource ModernProgress}"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- RAM Card -->
-                <Border Grid.Column="1" Style="{StaticResource GlassCard}">
-                    <StackPanel>
-                        <!-- Icon -->
-                        <Border Width="40" Height="40" CornerRadius="8" Background="#206CCB5F" Margin="0,0,0,16">
-                            <Path Data="M17,17H7V7H17M17,1H7A2,2 0 0,0 5,3V21A2,2 0 0,0 7,23H17A2,2 0 0,0 19,21V3A2,2 0 0,0 17,1Z"
-                                  Fill="#6CCB5F" Width="20" Height="20" Stretch="Uniform"/>
+                <Border Grid.Column="1" Style="{StaticResource GlassCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="8" Background="#10B981" Margin="0,0,12,0">
+                                <Path Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
+                                      Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="RAM" FontSize="13" FontWeight="SemiBold" Foreground="#A1A1AA" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="{Binding RamUsage, StringFormat={}{0:F0}%}"
+                                   FontSize="36" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,16,0,8"/>
+
+                        <Border Grid.Row="2" Height="4" CornerRadius="2" Background="#27272A">
+                            <Border CornerRadius="2" Background="#10B981" HorizontalAlignment="Left"
+                                    Width="{Binding RamUsage, Converter={StaticResource PercentageToWidthConverter}, FallbackValue=50%}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#10B981" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
                         </Border>
-
-                        <TextBlock Text="{Binding FormattedRamUsage}" Style="{StaticResource StatValue}"/>
-                        <TextBlock Text="RAM Kullanımı" Style="{StaticResource StatLabel}"/>
-
-                        <!-- Progress -->
-                        <ProgressBar Height="4" Margin="0,16,0,0"
-                                     Value="{Binding RamUsagePercent, Mode=OneWay}" Maximum="100"
-                                     Foreground="#6CCB5F" Style="{StaticResource ModernProgress}"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- Disk Card -->
-                <Border Grid.Column="2" Style="{StaticResource GlassCard}">
-                    <StackPanel>
-                        <!-- Icon -->
-                        <Border Width="40" Height="40" CornerRadius="8" Background="#20FCE100" Margin="0,0,0,16">
-                            <Path Data="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M6,4V8H18V4H6M6,20V16H18V20H6M6,12V10H18V12H6Z"
-                                  Fill="#FCE100" Width="20" Height="20" Stretch="Uniform"/>
+                <Border Grid.Column="2" Style="{StaticResource GlassCard}" Margin="0,0,12,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="8" Background="#F59E0B" Margin="0,0,12,0">
+                                <Path Data="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M12,4A6,6 0 0,0 6,10C6,13.31 8.69,16 12,16A6,6 0 0,0 18,10A6,6 0 0,0 12,4M12,8A2,2 0 0,1 14,10A2,2 0 0,1 12,12A2,2 0 0,1 10,10A2,2 0 0,1 12,8M12,10A2,2 0 0,0 10,12A2,2 0 0,0 14,12A2,2 0 0,0 12,14A2,2 0 0,0 10,12A2,2 0 0,0 12,10Z"
+                                      Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="Disk" FontSize="13" FontWeight="SemiBold" Foreground="#A1A1AA" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="{Binding DiskUsage, StringFormat={}{0:F0}%}"
+                                   FontSize="36" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,16,0,8"/>
+
+                        <Border Grid.Row="2" Height="4" CornerRadius="2" Background="#27272A">
+                            <Border CornerRadius="2" Background="#F59E0B" HorizontalAlignment="Left"
+                                    Width="{Binding DiskUsage, Converter={StaticResource PercentageToWidthConverter}, FallbackValue=50%}">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="8" ShadowDepth="0" Color="#F59E0B" Opacity="0.5"/>
+                                </Border.Effect>
+                            </Border>
                         </Border>
+                    </Grid>
+                </Border>
 
-                        <TextBlock Text="{Binding FormattedDiskUsage}" Style="{StaticResource StatValue}"/>
-                        <TextBlock Text="Disk Kullanımı" Style="{StaticResource StatLabel}"/>
+                <!-- Uptime Card -->
+                <Border Grid.Column="3" Style="{StaticResource GlassCard}">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
 
-                        <!-- Progress -->
-                        <ProgressBar Height="4" Margin="0,16,0,0"
-                                     Value="{Binding DiskUsagePercent, Mode=OneWay}" Maximum="100"
-                                     Foreground="#FCE100" Style="{StaticResource ModernProgress}"/>
-                    </StackPanel>
+                        <StackPanel Grid.Row="0" Orientation="Horizontal">
+                            <Border Width="36" Height="36" CornerRadius="8" Background="#8B5CF6" Margin="0,0,12,0">
+                                <Path Data="M12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"
+                                      Fill="White" Width="18" Height="18" Stretch="Uniform"/>
+                            </Border>
+                            <TextBlock Text="Calisma" FontSize="13" FontWeight="SemiBold" Foreground="#A1A1AA" VerticalAlignment="Center"/>
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="{Binding Uptime}"
+                                   FontSize="28" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,16,0,8"/>
+
+                        <TextBlock Grid.Row="2" Text="suresi" FontSize="12" Foreground="#71717A"/>
+                    </Grid>
                 </Border>
             </Grid>
 
             <!-- System Info Section -->
-            <TextBlock Text="SİSTEM BİLGİLERİ" Style="{StaticResource SectionTitle}"/>
+            <TextBlock Text="SISTEM BILGILERI" Style="{StaticResource SectionTitle}"/>
 
-            <Border Style="{StaticResource GlassCard}" Margin="0,0,16,32">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
-                    </Grid.RowDefinitions>
+            <Grid Margin="0,0,0,24">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <!-- Row 1 -->
-                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="BİLGİSAYAR ADI" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.ComputerName}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,20">
-                        <TextBlock Text="İŞLETİM SİSTEMİ" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.OsVersion}" FontSize="14" Foreground="White" FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis"/>
-                    </StackPanel>
+                <!-- System Info Card -->
+                <Border Grid.Column="0" Style="{StaticResource GlassCard}" Margin="0,0,12,0">
+                    <StackPanel>
+                        <TextBlock Text="Isletim Sistemi" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding OSName}" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,16"/>
 
-                    <!-- Row 2 -->
-                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="İŞLEMCİ" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.ProcessorName}" FontSize="14" Foreground="White" FontWeight="SemiBold"
-                                   TextTrimming="CharacterEllipsis"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,20">
-                        <TextBlock Text="ÇEKİRDEK SAYISI" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.ProcessorCores}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
+                        <TextBlock Text="Surum" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding OSVersion}" FontSize="14" Foreground="#FFFFFF" Margin="0,0,0,16"/>
 
-                    <!-- Row 3 -->
-                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,20">
-                        <TextBlock Text="TOPLAM RAM" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.FormattedTotalRam}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
+                        <TextBlock Text="Bilgisayar Adi" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding ComputerName}" FontSize="14" Foreground="#FFFFFF"/>
                     </StackPanel>
-                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,20">
-                        <TextBlock Text="KULLANILABİLİR RAM" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.FormattedAvailableRam}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
+                </Border>
 
-                    <!-- Row 4 -->
-                    <StackPanel Grid.Row="3" Grid.Column="0">
-                        <TextBlock Text="TOPLAM DİSK" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.FormattedTotalDisk}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
-                    <StackPanel Grid.Row="3" Grid.Column="1">
-                        <TextBlock Text="BOŞ DİSK ALANI" FontSize="10" Foreground="#666666" Margin="0,0,0,4"/>
-                        <TextBlock Text="{Binding SystemInfo.FormattedAvailableDisk}" FontSize="14" Foreground="White" FontWeight="SemiBold"/>
-                    </StackPanel>
-                </Grid>
-            </Border>
+                <!-- Hardware Info Card -->
+                <Border Grid.Column="1" Style="{StaticResource GlassCard}">
+                    <StackPanel>
+                        <TextBlock Text="Islemci" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding ProcessorName}" FontSize="14" FontWeight="SemiBold" Foreground="#FFFFFF" TextWrapping="Wrap" Margin="0,0,0,16"/>
 
-            <!-- Quick Action -->
-            <Button Content="Temizliği Başlat" Style="{StaticResource AccentButton}"
-                    Command="{Binding DataContext.NavigateToCleaningCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                    HorizontalAlignment="Left" Padding="32,12"/>
+                        <TextBlock Text="Toplam Bellek" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding TotalRam, StringFormat={}{0:F1} GB}" FontSize="14" Foreground="#FFFFFF" Margin="0,0,0,16"/>
+
+                        <TextBlock Text="Kullanilabilir Bellek" FontSize="11" Foreground="#71717A" Margin="0,0,0,4"/>
+                        <TextBlock Text="{Binding AvailableRam, StringFormat={}{0:F1} GB}" FontSize="14" Foreground="#FFFFFF"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Disk Usage Section -->
+            <TextBlock Text="DISK KULLANIMI" Style="{StaticResource SectionTitle}"/>
+
+            <ItemsControl ItemsSource="{Binding DiskDrives}" Margin="0,0,0,24">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource GlassCard}" Margin="0,0,0,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Drive Icon -->
+                                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="8" Background="#27272A" Margin="0,0,16,0">
+                                    <Path Data="M6,2H18A2,2 0 0,1 20,4V20A2,2 0 0,1 18,22H6A2,2 0 0,1 4,20V4A2,2 0 0,1 6,2M12,4A4,4 0 0,0 8,8H16A4,4 0 0,0 12,4M12,10A6,6 0 0,1 18,16H6A6,6 0 0,1 12,10Z"
+                                          Fill="#F59E0B" Width="22" Height="22" Stretch="Uniform"/>
+                                </Border>
+
+                                <!-- Drive Info -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <TextBlock Text="{Binding DriveName}" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                    <TextBlock FontSize="12" Foreground="#71717A" Margin="0,4,0,0">
+                                        <Run Text="{Binding UsedSpace, StringFormat={}{0:F0} GB}"/>
+                                        <Run Text=" / "/>
+                                        <Run Text="{Binding TotalSpace, StringFormat={}{0:F0} GB}"/>
+                                    </TextBlock>
+                                </StackPanel>
+
+                                <!-- Usage Percentage -->
+                                <StackPanel Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right">
+                                    <TextBlock Text="{Binding UsagePercent, StringFormat={}{0:F0}%}"
+                                               FontSize="20" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="kullanilan" FontSize="11" Foreground="#71717A" HorizontalAlignment="Right"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

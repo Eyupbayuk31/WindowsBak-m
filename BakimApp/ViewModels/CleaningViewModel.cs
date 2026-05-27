@@ -27,6 +27,7 @@ public class CleaningViewModel : BaseViewModel
         CancelCommand = new RelayCommand(Cancel, () => IsScanning || IsCleaning);
         SelectAllCommand = new RelayCommand(SelectAll);
         DeselectAllCommand = new RelayCommand(DeselectAll);
+        SelectCategoryCommand = new RelayCommand(OnSelectCategory);
 
         InitializeCategories();
     }
@@ -94,6 +95,7 @@ public class CleaningViewModel : BaseViewModel
     public ICommand CancelCommand { get; }
     public ICommand SelectAllCommand { get; }
     public ICommand DeselectAllCommand { get; }
+    public ICommand SelectCategoryCommand { get; }
 
     private void InitializeCategories()
     {
@@ -108,6 +110,14 @@ public class CleaningViewModel : BaseViewModel
                 }
             };
             Categories.Add(category);
+        }
+    }
+
+    private void OnSelectCategory(object? parameter)
+    {
+        if (parameter is CleaningCategory category)
+        {
+            SelectedCategory = category;
         }
     }
 
@@ -130,7 +140,7 @@ public class CleaningViewModel : BaseViewModel
     {
         IsScanning = true;
         OverallProgress = 0;
-        StatusMessage = "Taranıyor...";
+        StatusMessage = "Taraniyor...";
         _cancellationTokenSource = new CancellationTokenSource();
 
         int count = 0;
@@ -152,7 +162,7 @@ public class CleaningViewModel : BaseViewModel
         }
 
         UpdateTotalSelected();
-        StatusMessage = $"Tarama tamamlandı. {SelectedCategoriesCount} kategori seçili.";
+        StatusMessage = $"Tarama tamamlandi. {SelectedCategoriesCount} kategori secili.";
         IsScanning = false;
     }
 
@@ -164,7 +174,7 @@ public class CleaningViewModel : BaseViewModel
 
         IsCleaning = true;
         OverallProgress = 0;
-        StatusMessage = "Temizlik başlatılıyor...";
+        StatusMessage = "Temizlik baslatiliyor...";
         _cancellationTokenSource = new CancellationTokenSource();
 
         int count = 0;
@@ -194,7 +204,7 @@ public class CleaningViewModel : BaseViewModel
             OverallProgress = (double)count / selectedCategories.Count * 100;
         }
 
-        StatusMessage = "Temizlik tamamlandı!";
+        StatusMessage = "Temizlik tamamlandi!";
         IsCleaning = false;
         UpdateTotalSelected();
     }
@@ -202,7 +212,7 @@ public class CleaningViewModel : BaseViewModel
     private void Cancel()
     {
         _cancellationTokenSource?.Cancel();
-        StatusMessage = "İşlem iptal edildi.";
+        StatusMessage = "Islem iptal edildi.";
         IsScanning = false;
         IsCleaning = false;
     }
